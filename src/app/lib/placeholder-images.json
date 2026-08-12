@@ -1,0 +1,52 @@
+{
+  "images": [
+    {
+      "id": "hero-bg",
+      "url": "https://picsum.photos/seed/tech-bg/1920/1080",
+      "width": 1920,
+      "height": 1080,
+      "alt": "Technology Background",
+      "hint": "technology abstract"
+    },
+    {
+      "id": "project-irrigation",
+      "url": "https://picsum.photos/seed/agri-iot/800/600",
+      "width": 800,
+      "height": 600,
+      "alt": "Smart Irrigation System",
+      "hint": "agriculture iot"
+    },
+    {
+      "id": "project-parking",
+      "url": "https://picsum.photos/seed/parking-iot/800/600",
+      "width": 800,
+      "height": 600,
+      "alt": "Smart Parking System",
+      "hint": "smart parking"
+    },
+    {
+      "id": "project-recircle",
+      "url": "https://picsum.photos/seed/waste-mgmt/800/600",
+      "width": 800,
+      "height": 600,
+      "alt": "ReCircle Platform",
+      "hint": "waste recycling"
+    },
+    {
+      "id": "project-jaundice",
+      "url": "https://picsum.photos/seed/health-iot/800/600",
+      "width": 800,
+      "height": 600,
+      "alt": "Jaundice Detection System",
+      "hint": "medical sensor"
+    },
+    {
+      "id": "profile-placeholder",
+      "url": "https://picsum.photos/seed/profile-m/400/400",
+      "width": 400,
+      "height": 400,
+      "alt": "Mani Mari Siva P",
+      "hint": "professional portrait"
+    }
+  ]
+}
