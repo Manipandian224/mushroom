@@ -36,7 +36,7 @@ export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
 const diagnoseMushroomPrompt = ai.definePrompt({
   name: 'diagnoseMushroomPrompt',
-  model: 'googleai/gemini-1.5-flash',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: { schema: DiagnoseMushroomInputSchema },
   output: { schema: AnalysisResultSchema },
   prompt: `You are an expert mycologist and agricultural specialist.
