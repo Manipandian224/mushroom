@@ -1,25 +1,12 @@
 'use client';
 
-import { Navbar } from '@/components/navbar';
-import { Hero } from '@/components/hero';
-import { About } from '@/components/about';
-import { Skills } from '@/components/skills';
-import { Projects } from '@/components/projects';
-import { Experience } from '@/components/experience';
-import { Contact } from '@/components/contact';
-import { Footer } from '@/components/footer';
-
-export default function PortfolioPage() {
+export default function Page() {
   return (
-    <main className="min-h-screen">
-      <Navbar />
-      <Hero />
-      <About />
-      <Skills />
-      <Projects />
-      <Experience />
-      <Contact />
-      <Footer />
+    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-background text-foreground">
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold tracking-tight">Project Cleared</h1>
+        <p className="text-muted-foreground">The portfolio content has been removed. You can now start building your new application.</p>
+      </div>
     </main>
   );
 }

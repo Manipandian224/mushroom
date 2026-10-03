@@ -5,9 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Mani Mari Siva P | IoT & AI Portfolio",
-  description: "Personal portfolio of Mani Mari Siva P, a B.Tech Information Technology student specializing in IoT, AI, embedded systems, and web technologies.",
-  keywords: ["IoT", "AI", "Embedded Systems", "B.Tech IT", "Mani Mari Siva P", "Web Development", "Portfolio"],
+  title: "New Project",
+  description: "A fresh start with Next.js",
 };
 
 export default function RootLayout({
@@ -16,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
         {children}
       </body>
