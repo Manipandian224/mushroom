@@ -34,29 +34,33 @@ const AnalysisResultSchema = z.object({
 
 export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
-export async function diagnoseMushroom(input: z.infer<typeof DiagnoseMushroomInputSchema>): Promise<AnalysisResult> {
-  const prompt = ai.definePrompt({
-    name: 'diagnoseMushroomPrompt',
-    input: { schema: DiagnoseMushroomInputSchema },
-    output: { schema: AnalysisResultSchema },
-    prompt: `You are an expert mycologist and agricultural specialist.
-    Analyze the provided mushroom image.
-    
-    Language for response: {{language}}
-    
-    Requirements:
-    - Assess image quality.
-    - Identify possible species.
-    - Predict condition/disease.
-    - List visible symptoms (e.g., spots, mold, drying).
-    - Suggest practical causes (environmental stress, infection).
-    - Provide actionable next steps for the grower.
-    
-    DISCLAIMER: State clearly that this is advisory and not a definitive diagnosis.
-    
-    Photo: {{media url=photoDataUri}}`,
-  });
+const diagnoseMushroomPrompt = ai.definePrompt({
+  name: 'diagnoseMushroomPrompt',
+  model: 'googleai/gemini-1.5-flash',
+  input: { schema: DiagnoseMushroomInputSchema },
+  output: { schema: AnalysisResultSchema },
+  prompt: `You are an expert mycologist and agricultural specialist.
+  Analyze the provided mushroom image.
+  
+  Language for response: {{language}}
+  
+  Requirements:
+  - Assess image quality.
+  - Identify possible species.
+  - Predict condition/disease.
+  - List visible symptoms (e.g., spots, mold, drying).
+  - Suggest practical causes (environmental stress, infection).
+  - Provide actionable next steps for the grower.
+  
+  DISCLAIMER: State clearly that this is advisory and not a definitive diagnosis.
+  
+  Photo: {{media url=photoDataUri}}`,
+});
 
-  const { output } = await prompt(input);
-  return output!;
+export async function diagnoseMushroom(input: z.infer<typeof DiagnoseMushroomInputSchema>): Promise<AnalysisResult> {
+  const { output } = await diagnoseMushroomPrompt(input);
+  if (!output) {
+    throw new Error('AI failed to generate a diagnosis.');
+  }
+  return output;
 }
