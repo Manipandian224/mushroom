@@ -104,10 +104,17 @@ export async function diagnoseMushroom(input: z.infer<typeof DiagnoseMushroomInp
   } catch (error: any) {
     console.error("MushroomSense AI Doctor Error:", error);
 
-    // 3. Handle specific 404/Authentication errors
+    // 3. Handle specific 503 (High Demand) error
+    if (error.message?.includes('503') || error.message?.includes('high demand') || error.message?.includes('Service Unavailable')) {
+      throw new Error(
+        'The AI service is currently experiencing high demand. Please wait a few seconds and try again.'
+      );
+    }
+
+    // Handle specific 404/Authentication errors
     if (error.message?.includes('404') || error.message?.includes('not found')) {
       throw new Error(
-        'The Gemini model "gemini-1.5-flash" is not available for your API key or region. ' +
+        'The Gemini model is not available for your API key or region. ' +
         'Please ensure your API key from Google AI Studio has the "Generative Language API" enabled.'
       );
     }
