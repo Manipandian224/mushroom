@@ -1,14 +1,32 @@
 
 'use client';
 
+import React, { useState, useRef } from 'react';
 import { useLanguage } from '@/hooks/use-language';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Thermometer, Droplets, Wind, Sprout, ShieldAlert, Camera, History, LayoutDashboard } from 'lucide-react';
+import { 
+  Thermometer, 
+  Droplets, 
+  Wind, 
+  Sprout, 
+  ShieldAlert, 
+  Camera, 
+  History, 
+  LayoutDashboard,
+  Upload,
+  X,
+  Loader2,
+  CheckCircle2
+} from 'lucide-react';
 import { LanguageSelector } from '@/components/language-selector';
+import Image from 'next/image';
 
 export default function Dashboard() {
   const { t } = useLanguage();
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sensorStats = [
     { label: t.temperature, value: '--', unit: '°C', icon: <Thermometer className="w-5 h-5" />, color: 'text-orange-500' },
@@ -16,6 +34,36 @@ export default function Dashboard() {
     { label: t.co2, value: '--', unit: 'ppm', icon: <Wind className="w-5 h-5" />, color: 'text-green-500' },
     { label: t.moisture, value: '--', unit: '%', icon: <Sprout className="w-5 h-5" />, color: 'text-amber-600' },
   ];
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAnalyze = () => {
+    if (!selectedImage) return;
+    setIsAnalyzing(true);
+    // Simulate AI Analysis
+    setTimeout(() => {
+      setIsAnalyzing(false);
+      // Logic for showing results will go here in the next phase
+    }, 3000);
+  };
+
+  const clearImage = () => {
+    setSelectedImage(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -53,8 +101,8 @@ export default function Dashboard() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-6 lg:p-10 space-y-8">
-          <header className="flex justify-between items-end">
+        <main className="flex-1 p-6 lg:p-10 space-y-8 max-w-7xl mx-auto w-full">
+          <header className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             <div>
               <h2 className="text-3xl font-bold">{t.dashboard}</h2>
               <p className="text-muted-foreground">{t.tagline}</p>
@@ -85,22 +133,87 @@ export default function Dashboard() {
             ))}
           </div>
 
-          {/* Quick Actions / AI Preview */}
+          {/* AI Doctor Section */}
           <div className="grid lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-2 border-none shadow-sm">
-              <CardHeader>
+            <Card className="lg:col-span-2 border-none shadow-sm overflow-hidden">
+              <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2">
                   <Camera className="w-5 h-5 text-blue-600" />
                   {t.aiDoctor}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col items-center justify-center py-12 border-2 border-dashed rounded-xl bg-slate-50/50">
-                <Button size="lg" className="rounded-full shadow-lg gap-2">
-                  <Camera className="w-4 h-4" /> {t.uploadPhoto}
-                </Button>
-                <p className="text-sm text-muted-foreground mt-4 text-center max-w-sm">
-                  {t.disclaimer.slice(0, 100)}...
-                </p>
+              <CardContent>
+                <div 
+                  className={`relative flex flex-col items-center justify-center py-10 border-2 border-dashed rounded-xl transition-colors ${
+                    selectedImage ? 'border-blue-200 bg-blue-50/20' : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'
+                  }`}
+                >
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                  />
+
+                  {selectedImage ? (
+                    <div className="w-full flex flex-col items-center gap-6 px-6">
+                      <div className="relative w-full max-w-sm aspect-square rounded-lg overflow-hidden border-4 border-white shadow-xl">
+                        <Image 
+                          src={selectedImage} 
+                          alt="Mushroom preview" 
+                          fill 
+                          className="object-cover"
+                        />
+                        <Button 
+                          variant="destructive" 
+                          size="icon" 
+                          className="absolute top-2 right-2 rounded-full shadow-lg"
+                          onClick={clearImage}
+                          disabled={isAnalyzing}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
+                        <Button 
+                          className="flex-1 rounded-full shadow-lg gap-2 h-12 text-base"
+                          onClick={handleAnalyze}
+                          disabled={isAnalyzing}
+                        >
+                          {isAnalyzing ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                              {t.loading}
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="w-5 h-5" />
+                              {t.analyzeImage}
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="bg-white p-4 rounded-full shadow-sm mb-4">
+                        <Upload className="w-8 h-8 text-blue-600" />
+                      </div>
+                      <Button 
+                        size="lg" 
+                        className="rounded-full shadow-lg gap-2"
+                        onClick={handleUploadClick}
+                      >
+                        <Camera className="w-4 h-4" /> {t.uploadPhoto}
+                      </Button>
+                      <p className="text-sm text-muted-foreground mt-4 text-center max-w-sm px-4">
+                        {t.disclaimer.slice(0, 100)}...
+                      </p>
+                    </>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
@@ -127,6 +240,7 @@ function SidebarItem({ icon, label, active = false }: { icon: React.ReactNode, l
     <Button
       variant={active ? "secondary" : "ghost"}
       className={`w-full justify-start gap-3 rounded-xl font-medium ${active ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700' : ''}`}
+      suppressHydrationWarning
     >
       {icon}
       {label}
