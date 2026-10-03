@@ -44,11 +44,11 @@ export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
 /**
  * Prompt definition for mushroom diagnosis.
- * Uses the latest stable Gemini 1.5 Flash model.
+ * Uses the stable Gemini 1.5 Flash model identifier.
  */
 const diagnoseMushroomPrompt = ai.definePrompt({
   name: 'diagnoseMushroomPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-1.5-flash',
   input: { schema: DiagnoseMushroomInputSchema },
   output: { schema: AnalysisResultSchema },
   config: {
@@ -101,7 +101,7 @@ export async function diagnoseMushroom(input: z.infer<typeof DiagnoseMushroomInp
     // 3. Handle specific 404/Authentication errors
     if (error.message?.includes('404') || error.message?.includes('not found')) {
       throw new Error(
-        'The Gemini model "gemini-1.5-flash-latest" is not available for your API key or region. ' +
+        'The Gemini model "gemini-1.5-flash" is not available for your API key or region. ' +
         'Please ensure your API key from Google AI Studio has the "Generative Language API" enabled.'
       );
     }
