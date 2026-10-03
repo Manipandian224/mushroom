@@ -44,15 +44,17 @@ export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
 /**
  * Prompt definition for mushroom diagnosis.
- * Uses Handlebars syntax for input templating.
+ * Uses the latest stable Gemini 1.5 Flash model.
  */
 const diagnoseMushroomPrompt = ai.definePrompt({
   name: 'diagnoseMushroomPrompt',
-  model: 'googleai/gemini-1.5-flash',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: { schema: DiagnoseMushroomInputSchema },
   output: { schema: AnalysisResultSchema },
   config: {
     temperature: 0.4,
+    topP: 0.8,
+    topK: 40,
   },
   prompt: `You are an expert mycologist and agricultural specialist.
   Analyze the provided mushroom image carefully.
@@ -99,13 +101,13 @@ export async function diagnoseMushroom(input: z.infer<typeof DiagnoseMushroomInp
     // 3. Handle specific 404/Authentication errors
     if (error.message?.includes('404') || error.message?.includes('not found')) {
       throw new Error(
-        'The Gemini model "gemini-1.5-flash" is not available for your API key or region. ' +
-        'Please ensure your API key is from Google AI Studio and has the correct permissions.'
+        'The Gemini model "gemini-1.5-flash-latest" is not available for your API key or region. ' +
+        'Please ensure your API key from Google AI Studio has the "Generative Language API" enabled.'
       );
     }
 
     if (error.message?.includes('429') || error.message?.includes('quota')) {
-      throw new Error('AI analysis quota exceeded. Please wait a moment before trying again.');
+      throw new Error('AI analysis quota exceeded. Please wait a minute before trying again.');
     }
 
     // 4. Fallback for generic errors
