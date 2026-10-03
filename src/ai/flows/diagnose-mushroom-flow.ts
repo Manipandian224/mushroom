@@ -5,7 +5,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { gemini15Flash } from '@genkit-ai/google-genai';
 
 const DiagnoseMushroomInputSchema = z.object({
   photoDataUri: z.string().describe("Base64 data URI of the mushroom photo."),
@@ -37,7 +36,7 @@ export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
 const diagnoseMushroomPrompt = ai.definePrompt({
   name: 'diagnoseMushroomPrompt',
-  model: gemini15Flash,
+  model: 'googleai/gemini-1.5-flash',
   input: { schema: DiagnoseMushroomInputSchema },
   output: { schema: AnalysisResultSchema },
   prompt: `You are an expert mycologist and agricultural specialist.
