@@ -18,7 +18,8 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
-  Stethoscope
+  Stethoscope,
+  Info
 } from 'lucide-react';
 import { LanguageSelector } from '@/components/language-selector';
 import Image from 'next/image';
@@ -29,6 +30,7 @@ export default function Dashboard() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sensorStats = [
@@ -45,6 +47,7 @@ export default function Dashboard() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setError(null);
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedImage(reader.result as string);
@@ -57,14 +60,16 @@ export default function Dashboard() {
   const handleAnalyze = async () => {
     if (!selectedImage) return;
     setIsAnalyzing(true);
+    setError(null);
     try {
       const result = await diagnoseMushroom({
         photoDataUri: selectedImage,
         language: lang,
       });
       setAnalysisResult(result);
-    } catch (error) {
-      console.error("Analysis failed:", error);
+    } catch (err: any) {
+      console.error("Analysis failed:", err);
+      setError(err.message || "An unexpected error occurred.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -73,6 +78,7 @@ export default function Dashboard() {
   const clearImage = () => {
     setSelectedImage(null);
     setAnalysisResult(null);
+    setError(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -217,16 +223,26 @@ export default function Dashboard() {
                   )}
                 </div>
 
+                {error && (
+                  <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex gap-3 text-red-800 animate-in fade-in zoom-in duration-300">
+                    <AlertCircle className="w-5 h-5 shrink-0" />
+                    <div className="text-sm">
+                      <p className="font-bold">Analysis Failed</p>
+                      <p>{error}</p>
+                    </div>
+                  </div>
+                )}
+
                 {analysisResult && (
                   <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="p-4 rounded-xl bg-slate-50 border">
-                        <h4 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-2">{t.possibleDisease || 'Condition'}</h4>
+                        <h4 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-2">Condition</h4>
                         <p className="text-xl font-bold text-slate-900">{analysisResult.condition.name}</p>
                         <p className="text-sm text-slate-600 mt-1">{analysisResult.condition.description}</p>
                       </div>
                       <div className="p-4 rounded-xl bg-slate-50 border">
-                        <h4 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-2">{t.appName || 'Identification'}</h4>
+                        <h4 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-2">Species Identification</h4>
                         <p className="text-xl font-bold text-slate-900">{analysisResult.species.name || 'Unknown'}</p>
                         <p className="text-sm text-slate-600 mt-1">Status: {analysisResult.species.identification_status}</p>
                       </div>
@@ -263,7 +279,7 @@ export default function Dashboard() {
                     </div>
 
                     <div className="p-4 bg-amber-50 rounded-xl border border-amber-100 flex gap-3">
-                      <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+                      <Info className="w-5 h-5 text-amber-600 shrink-0" />
                       <p className="text-xs text-amber-800 leading-relaxed italic">{t.disclaimer}</p>
                     </div>
                   </div>

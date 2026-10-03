@@ -1,13 +1,21 @@
 'use server';
 /**
  * @fileOverview AI Mushroom Doctor analysis flow.
+ * 
+ * This flow uses the Gemini 1.5 Flash model via Genkit to analyze mushroom images.
+ * It provides structured output including species identification, condition diagnosis,
+ * visible symptoms, possible causes, and suggested next steps.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const DiagnoseMushroomInputSchema = z.object({
-  photoDataUri: z.string().describe("Base64 data URI of the mushroom photo."),
+  photoDataUri: z
+    .string()
+    .describe(
+      "A photo of a mushroom, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+    ),
   language: z.enum(['en', 'ta']).default('en'),
 });
 
@@ -29,11 +37,15 @@ const AnalysisResultSchema = z.object({
   visible_symptoms: z.array(z.string()),
   possible_causes: z.array(z.string()),
   suggested_steps: z.array(z.string()),
-  confidence: z.number().nullable(),
+  confidence: z.number().nullable().describe('Confidence score between 0 and 1, if available.'),
 });
 
 export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
+/**
+ * Prompt definition for mushroom diagnosis.
+ * Uses Handlebars syntax for input templating.
+ */
 const diagnoseMushroomPrompt = ai.definePrompt({
   name: 'diagnoseMushroomPrompt',
   model: 'googleai/gemini-1.5-flash',
@@ -43,39 +55,62 @@ const diagnoseMushroomPrompt = ai.definePrompt({
     temperature: 0.4,
   },
   prompt: `You are an expert mycologist and agricultural specialist.
-  Analyze the provided mushroom image.
+  Analyze the provided mushroom image carefully.
   
   Language for response: {{language}}
   
   Requirements:
-  - Assess image quality.
-  - Identify possible species.
-  - Predict condition/disease.
-  - List visible symptoms (e.g., spots, mold, drying).
-  - Suggest practical causes (environmental stress, infection).
-  - Provide actionable next steps for the grower.
+  - Assess image quality for mycological analysis.
+  - Identify the most likely species if possible.
+  - Predict the current health condition or possible disease.
+  - List specific visible symptoms (e.g., discoloration, mold growth, spots, shriveling).
+  - Suggest plausible environmental or biological causes.
+  - Provide prioritized, actionable next steps for the grower.
   
-  DISCLAIMER: State clearly that this is advisory and not a definitive diagnosis.
+  DISCLAIMER: This analysis is for advisory purposes only. It is not a definitive laboratory diagnosis.
   
   Photo: {{media url=photoDataUri}}`,
 });
 
+/**
+ * Wrapper function to call the mushroom diagnosis flow.
+ * Includes detailed error handling for API and configuration issues.
+ */
 export async function diagnoseMushroom(input: z.infer<typeof DiagnoseMushroomInputSchema>): Promise<AnalysisResult> {
+  // 1. Verify API Key presence
   if (!process.env.GEMINI_API_KEY) {
-    throw new Error('GEMINI_API_KEY is not configured in environment variables.');
+    throw new Error(
+      'GEMINI_API_KEY is not configured. Please add it to your .env.local file from Google AI Studio.'
+    );
   }
 
   try {
+    // 2. Execute the prompt
     const { output } = await diagnoseMushroomPrompt(input);
+    
     if (!output) {
-      throw new Error('AI failed to generate a diagnosis.');
+      throw new Error('The AI model returned an empty response. Please try with a clearer image.');
     }
+
     return output;
   } catch (error: any) {
-    console.error("Genkit Error:", error);
+    console.error("MushroomSense AI Doctor Error:", error);
+
+    // 3. Handle specific 404/Authentication errors
     if (error.message?.includes('404') || error.message?.includes('not found')) {
-      throw new Error('The AI model "gemini-1.5-flash" could not be reached. Please check your API key permissions and region availability.');
+      throw new Error(
+        'The Gemini model "gemini-1.5-flash" is not available for your API key or region. ' +
+        'Please ensure your API key is from Google AI Studio and has the correct permissions.'
+      );
     }
-    throw error;
+
+    if (error.message?.includes('429') || error.message?.includes('quota')) {
+      throw new Error('AI analysis quota exceeded. Please wait a moment before trying again.');
+    }
+
+    // 4. Fallback for generic errors
+    throw new Error(
+      error.message || 'An unexpected error occurred during AI analysis. Please check your connection and try again.'
+    );
   }
 }
