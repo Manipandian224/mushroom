@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useRef } from 'react';
@@ -17,15 +16,19 @@ import {
   Upload,
   X,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle,
+  Stethoscope
 } from 'lucide-react';
 import { LanguageSelector } from '@/components/language-selector';
 import Image from 'next/image';
+import { diagnoseMushroom, type AnalysisResult } from '@/ai/flows/diagnose-mushroom-flow';
 
 export default function Dashboard() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sensorStats = [
@@ -45,29 +48,36 @@ export default function Dashboard() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedImage(reader.result as string);
+        setAnalysisResult(null);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!selectedImage) return;
     setIsAnalyzing(true);
-    // Simulate AI Analysis
-    setTimeout(() => {
+    try {
+      const result = await diagnoseMushroom({
+        photoDataUri: selectedImage,
+        language: lang,
+      });
+      setAnalysisResult(result);
+    } catch (error) {
+      console.error("Analysis failed:", error);
+    } finally {
       setIsAnalyzing(false);
-      // Logic for showing results will go here in the next phase
-    }, 3000);
+    }
   };
 
   const clearImage = () => {
     setSelectedImage(null);
+    setAnalysisResult(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Top Navbar */}
       <nav className="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-50">
         <div className="flex items-center gap-2">
           <div className="bg-blue-600 p-2 rounded-lg text-white">
@@ -87,32 +97,25 @@ export default function Dashboard() {
       </nav>
 
       <div className="flex flex-1">
-        {/* Sidebar */}
         <aside className="w-64 bg-white border-r hidden lg:flex flex-col p-4 gap-2">
           <SidebarItem icon={<LayoutDashboard className="w-4 h-4" />} label={t.dashboard} active />
           <SidebarItem icon={<Thermometer className="w-4 h-4" />} label={t.liveMonitoring} />
           <SidebarItem icon={<History className="w-4 h-4" />} label={t.history} />
           <SidebarItem icon={<Camera className="w-4 h-4" />} label={t.aiDoctor} />
-          <SidebarItem icon={<History className="w-4 h-4" />} label={t.analysisHistory} />
           <div className="mt-auto pt-4 border-t flex flex-col gap-2">
             <SidebarItem icon={<ShieldAlert className="w-4 h-4" />} label={t.alerts} />
             <SidebarItem icon={<LayoutDashboard className="w-4 h-4" />} label={t.settings} />
           </div>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 p-6 lg:p-10 space-y-8 max-w-7xl mx-auto w-full">
           <header className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             <div>
               <h2 className="text-3xl font-bold">{t.dashboard}</h2>
               <p className="text-muted-foreground">{t.tagline}</p>
             </div>
-            <div className="text-right text-xs text-muted-foreground">
-              <p>{t.lastUpdated}: --</p>
-            </div>
           </header>
 
-          {/* Sensor Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {sensorStats.map((stat, i) => (
               <Card key={i} className="border-none shadow-sm hover:shadow-md transition-shadow">
@@ -133,7 +136,6 @@ export default function Dashboard() {
             ))}
           </div>
 
-          {/* AI Doctor Section */}
           <div className="grid lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2 border-none shadow-sm overflow-hidden">
               <CardHeader className="pb-4">
@@ -142,7 +144,7 @@ export default function Dashboard() {
                   {t.aiDoctor}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
                 <div 
                   className={`relative flex flex-col items-center justify-center py-10 border-2 border-dashed rounded-xl transition-colors ${
                     selectedImage ? 'border-blue-200 bg-blue-50/20' : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50'
@@ -189,7 +191,7 @@ export default function Dashboard() {
                             </>
                           ) : (
                             <>
-                              <CheckCircle2 className="w-5 h-5" />
+                              <Stethoscope className="w-5 h-5" />
                               {t.analyzeImage}
                             </>
                           )}
@@ -209,11 +211,63 @@ export default function Dashboard() {
                         <Camera className="w-4 h-4" /> {t.uploadPhoto}
                       </Button>
                       <p className="text-sm text-muted-foreground mt-4 text-center max-w-sm px-4">
-                        {t.disclaimer.slice(0, 100)}...
+                        {t.disclaimer}
                       </p>
                     </>
                   )}
                 </div>
+
+                {analysisResult && (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="p-4 rounded-xl bg-slate-50 border">
+                        <h4 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-2">{t.possibleDisease || 'Condition'}</h4>
+                        <p className="text-xl font-bold text-slate-900">{analysisResult.condition.name}</p>
+                        <p className="text-sm text-slate-600 mt-1">{analysisResult.condition.description}</p>
+                      </div>
+                      <div className="p-4 rounded-xl bg-slate-50 border">
+                        <h4 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-2">{t.appName || 'Identification'}</h4>
+                        <p className="text-xl font-bold text-slate-900">{analysisResult.species.name || 'Unknown'}</p>
+                        <p className="text-sm text-slate-600 mt-1">Status: {analysisResult.species.identification_status}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-bold flex items-center gap-2 mb-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-600" />
+                          Visible Symptoms
+                        </h4>
+                        <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
+                          {analysisResult.visible_symptoms.map((s, i) => <li key={i}>{s}</li>)}
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-bold flex items-center gap-2 mb-2">
+                          <AlertCircle className="w-4 h-4 text-amber-600" />
+                          Possible Causes
+                        </h4>
+                        <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
+                          {analysisResult.possible_causes.map((c, i) => <li key={i}>{c}</li>)}
+                        </ul>
+                      </div>
+                      <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                        <h4 className="font-bold text-blue-900 flex items-center gap-2 mb-2">
+                          <Stethoscope className="w-4 h-4" />
+                          Suggested Next Steps
+                        </h4>
+                        <ul className="list-decimal list-inside text-sm text-blue-800 space-y-1">
+                          {analysisResult.suggested_steps.map((step, i) => <li key={i}>{step}</li>)}
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-amber-50 rounded-xl border border-amber-100 flex gap-3">
+                      <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+                      <p className="text-xs text-amber-800 leading-relaxed italic">{t.disclaimer}</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
