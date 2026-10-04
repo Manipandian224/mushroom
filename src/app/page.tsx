@@ -119,7 +119,7 @@ export default function Dashboard() {
           <header className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             <div>
               <h2 className="text-3xl font-bold">Dashboard</h2>
-              <p className="text-muted-foreground">Smart Mushroom Cultivation Monitoring</p>
+              <p className="text-muted-foreground">Smart Cultivation Overview</p>
             </div>
           </header>
 
@@ -186,7 +186,7 @@ export default function Dashboard() {
                       </div>
                       
                       <div className="flex flex-col gap-4 w-full max-w-sm">
-                        <div className="flex items-center justify-between p-2 bg-slate-50 rounded-lg border border-slate-100">
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
                            <div className="flex items-center gap-2">
                               <Languages className="w-4 h-4 text-muted-foreground" />
                               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Analysis Language</span>
@@ -298,7 +298,7 @@ export default function Dashboard() {
 
             <Card className="border-none shadow-sm">
               <CardHeader>
-                <CardTitle className="text-lg">Alerts</CardTitle>
+                <CardTitle className="text-lg">System Alerts</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
@@ -319,7 +319,6 @@ function SidebarItem({ icon, label, active = false }: { icon: React.ReactNode, l
     <Button
       variant={active ? "secondary" : "ghost"}
       className={`w-full justify-start gap-3 rounded-xl font-medium ${active ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700' : ''}`}
-      suppressHydrationWarning
     >
       {icon}
       {label}
