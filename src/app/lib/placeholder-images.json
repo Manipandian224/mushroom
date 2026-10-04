@@ -1,3 +1,12 @@
 {
-  "images": []
+  "images": [
+    {
+      "id": "hero-bg",
+      "url": "https://images.unsplash.com/photo-1543332164-6e82f355badc?q=80&w=1000",
+      "width": 1920,
+      "height": 1080,
+      "alt": "Mani Mari Siva P",
+      "hint": "developer portrait"
+    }
+  ]
 }

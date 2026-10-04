@@ -7,7 +7,7 @@ import Image from 'next/image';
 import images from '@/app/lib/placeholder-images.json';
 
 export function Hero() {
-  const heroImage = images.images.find(img => img.id === 'hero-bg');
+  const heroImage = (images.images as Array<{ id: string; url: string; width: number; height: number; alt: string; hint?: string }>).find(img => img.id === 'hero-bg');
 
   return (
     <section id="home" className="relative min-h-screen flex items-center pt-20 overflow-hidden">
