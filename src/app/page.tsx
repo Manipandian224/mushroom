@@ -19,7 +19,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Stethoscope,
-  Info
+  Info,
+  Settings
 } from 'lucide-react';
 import { LanguageSelector } from '@/components/language-selector';
 import Image from 'next/image';
@@ -33,11 +34,12 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Hardcoded English for general dashboard UI to keep translation "only for AI"
   const sensorStats = [
-    { label: t.temperature, value: '--', unit: '°C', icon: <Thermometer className="w-5 h-5" />, color: 'text-orange-500' },
-    { label: t.humidity, value: '--', unit: '%', icon: <Droplets className="w-5 h-5" />, color: 'text-blue-500' },
-    { label: t.co2, value: '--', unit: 'ppm', icon: <Wind className="w-5 h-5" />, color: 'text-green-500' },
-    { label: t.moisture, value: '--', unit: '%', icon: <Sprout className="w-5 h-5" />, color: 'text-amber-600' },
+    { label: 'Temperature', value: '--', unit: '°C', icon: <Thermometer className="w-5 h-5" />, color: 'text-orange-500' },
+    { label: 'Humidity', value: '--', unit: '%', icon: <Droplets className="w-5 h-5" />, color: 'text-blue-500' },
+    { label: 'CO2', value: '--', unit: 'ppm', icon: <Wind className="w-5 h-5" />, color: 'text-green-500' },
+    { label: 'Substrate Moisture', value: '--', unit: '%', icon: <Sprout className="w-5 h-5" />, color: 'text-amber-600' },
   ];
 
   const handleUploadClick = () => {
@@ -90,12 +92,11 @@ export default function Dashboard() {
             <Sprout className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="font-bold text-xl leading-none">{t.appName}</h1>
-            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t.tagline}</p>
+            <h1 className="font-bold text-xl leading-none">MushroomSense AI</h1>
+            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Smart Mushroom Cultivation Monitoring</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <LanguageSelector />
           <Button variant="ghost" size="icon" className="rounded-full">
             <ShieldAlert className="w-5 h-5" />
           </Button>
@@ -104,21 +105,21 @@ export default function Dashboard() {
 
       <div className="flex flex-1">
         <aside className="w-64 bg-white border-r hidden lg:flex flex-col p-4 gap-2">
-          <SidebarItem icon={<LayoutDashboard className="w-4 h-4" />} label={t.dashboard} active />
-          <SidebarItem icon={<Thermometer className="w-4 h-4" />} label={t.liveMonitoring} />
-          <SidebarItem icon={<History className="w-4 h-4" />} label={t.history} />
-          <SidebarItem icon={<Camera className="w-4 h-4" />} label={t.aiDoctor} />
+          <SidebarItem icon={<LayoutDashboard className="w-4 h-4" />} label="Dashboard" active />
+          <SidebarItem icon={<Thermometer className="w-4 h-4" />} label="Live Monitoring" />
+          <SidebarItem icon={<History className="w-4 h-4" />} label="History" />
+          <SidebarItem icon={<Camera className="w-4 h-4" />} label="AI Doctor" />
           <div className="mt-auto pt-4 border-t flex flex-col gap-2">
-            <SidebarItem icon={<ShieldAlert className="w-4 h-4" />} label={t.alerts} />
-            <SidebarItem icon={<LayoutDashboard className="w-4 h-4" />} label={t.settings} />
+            <SidebarItem icon={<ShieldAlert className="w-4 h-4" />} label="Alerts" />
+            <SidebarItem icon={<Settings className="w-4 h-4" />} label="Settings" />
           </div>
         </aside>
 
         <main className="flex-1 p-6 lg:p-10 space-y-8 max-w-7xl mx-auto w-full">
           <header className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             <div>
-              <h2 className="text-3xl font-bold">{t.dashboard}</h2>
-              <p className="text-muted-foreground">{t.tagline}</p>
+              <h2 className="text-3xl font-bold">Dashboard</h2>
+              <p className="text-muted-foreground">Smart Mushroom Cultivation Monitoring</p>
             </div>
           </header>
 
@@ -136,7 +137,7 @@ export default function Dashboard() {
                     {stat.value}
                     <span className="text-sm font-normal text-muted-foreground ml-1">{stat.unit}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1 italic">{t.waitingForData}</p>
+                  <p className="text-xs text-muted-foreground mt-1 italic">Waiting for sensor data...</p>
                 </CardContent>
               </Card>
             ))}
@@ -144,11 +145,15 @@ export default function Dashboard() {
 
           <div className="grid lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2 border-none shadow-sm overflow-hidden">
-              <CardHeader className="pb-4">
+              <CardHeader className="flex flex-row items-center justify-between pb-4">
                 <CardTitle className="flex items-center gap-2">
                   <Camera className="w-5 h-5 text-blue-600" />
                   {t.aiDoctor}
                 </CardTitle>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider hidden sm:inline-block">Output Language</span>
+                  <LanguageSelector />
+                </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div 
@@ -289,7 +294,7 @@ export default function Dashboard() {
 
             <Card className="border-none shadow-sm">
               <CardHeader>
-                <CardTitle className="text-lg">{t.alerts}</CardTitle>
+                <CardTitle className="text-lg">Alerts</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
