@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useRef } from 'react';
@@ -86,6 +87,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Header - Fixed to English per request */}
       <nav className="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-50">
         <div className="flex items-center gap-2">
           <div className="bg-blue-600 p-2 rounded-lg text-white">
@@ -104,6 +106,7 @@ export default function Dashboard() {
       </nav>
 
       <div className="flex flex-1">
+        {/* Sidebar - Fixed to English per request */}
         <aside className="w-64 bg-white border-r hidden lg:flex flex-col p-4 gap-2">
           <SidebarItem icon={<LayoutDashboard className="w-4 h-4" />} label="Dashboard" active />
           <SidebarItem icon={<Thermometer className="w-4 h-4" />} label="Live Monitoring" />
@@ -186,10 +189,13 @@ export default function Dashboard() {
                       </div>
                       
                       <div className="flex flex-col gap-4 w-full max-w-sm">
+                        {/* Language Selector specifically for AI analysis */}
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
                            <div className="flex items-center gap-2">
                               <Languages className="w-4 h-4 text-muted-foreground" />
-                              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Analysis Language</span>
+                              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                                {t.analysisLanguage}
+                              </span>
                            </div>
                            <LanguageSelector />
                         </div>
@@ -236,7 +242,7 @@ export default function Dashboard() {
                   <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex gap-3 text-red-800 animate-in fade-in zoom-in duration-300">
                     <AlertCircle className="w-5 h-5 shrink-0" />
                     <div className="text-sm">
-                      <p className="font-bold">Analysis Failed</p>
+                      <p className="font-bold">{t.analysisFailed}</p>
                       <p>{error}</p>
                     </div>
                   </div>
@@ -246,14 +252,14 @@ export default function Dashboard() {
                   <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="p-4 rounded-xl bg-slate-50 border">
-                        <h4 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-2">Condition</h4>
+                        <h4 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-2">{t.condition}</h4>
                         <p className="text-xl font-bold text-slate-900">{analysisResult.condition.name}</p>
                         <p className="text-sm text-slate-600 mt-1">{analysisResult.condition.description}</p>
                       </div>
                       <div className="p-4 rounded-xl bg-slate-50 border">
-                        <h4 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-2">Species Identification</h4>
-                        <p className="text-xl font-bold text-slate-900">{analysisResult.species.name || 'Unknown'}</p>
-                        <p className="text-sm text-slate-600 mt-1">Status: {analysisResult.species.identification_status}</p>
+                        <h4 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-2">{t.speciesIdentification}</h4>
+                        <p className="text-xl font-bold text-slate-900">{analysisResult.species.name || t.unknown}</p>
+                        <p className="text-sm text-slate-600 mt-1">{t.status}: {analysisResult.species.identification_status}</p>
                       </div>
                     </div>
 
@@ -261,7 +267,7 @@ export default function Dashboard() {
                       <div>
                         <h4 className="font-bold flex items-center gap-2 mb-2">
                           <CheckCircle2 className="w-4 h-4 text-green-600" />
-                          Visible Symptoms
+                          {t.visibleSymptoms}
                         </h4>
                         <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
                           {analysisResult.visible_symptoms.map((s, i) => <li key={i}>{s}</li>)}
@@ -270,7 +276,7 @@ export default function Dashboard() {
                       <div>
                         <h4 className="font-bold flex items-center gap-2 mb-2">
                           <AlertCircle className="w-4 h-4 text-amber-600" />
-                          Possible Causes
+                          {t.possibleCauses}
                         </h4>
                         <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
                           {analysisResult.possible_causes.map((c, i) => <li key={i}>{c}</li>)}
@@ -279,7 +285,7 @@ export default function Dashboard() {
                       <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
                         <h4 className="font-bold text-blue-900 flex items-center gap-2 mb-2">
                           <Stethoscope className="w-4 h-4" />
-                          Suggested Next Steps
+                          {t.suggestedSteps}
                         </h4>
                         <ul className="list-decimal list-inside text-sm text-blue-800 space-y-1">
                           {analysisResult.suggested_steps.map((step, i) => <li key={i}>{step}</li>)}

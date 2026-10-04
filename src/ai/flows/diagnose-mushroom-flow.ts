@@ -43,7 +43,7 @@ export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
 const diagnoseMushroomPrompt = ai.definePrompt({
   name: 'diagnoseMushroomPrompt',
-  model: 'googleai/gemini-1.5-flash',
+  model: 'googleai/gemini-3.8-flash',
   input: { schema: DiagnoseMushroomInputSchema },
   output: { schema: AnalysisResultSchema },
   config: {
