@@ -42,10 +42,6 @@ const AnalysisResultSchema = z.object({
 
 export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
 
-/**
- * Prompt definition for mushroom diagnosis.
- * Uses the stable Gemini 1.5 Flash model identifier.
- */
 const diagnoseMushroomPrompt = ai.definePrompt({
   name: 'diagnoseMushroomPrompt',
   model: 'googleai/gemini-1.5-flash',
@@ -80,20 +76,12 @@ const diagnoseMushroomPrompt = ai.definePrompt({
   Photo: {{media url=photoDataUri}}`,
 });
 
-/**
- * Wrapper function to call the mushroom diagnosis flow.
- * Includes detailed error handling for API and configuration issues.
- */
 export async function diagnoseMushroom(input: z.infer<typeof DiagnoseMushroomInputSchema>): Promise<AnalysisResult> {
-  // 1. Verify API Key presence
   if (!process.env.GEMINI_API_KEY) {
-    throw new Error(
-      'GEMINI_API_KEY is not configured. Please add it to your .env.local file from Google AI Studio.'
-    );
+    throw new Error('GEMINI_API_KEY is not configured. Please add it to your .env.local file.');
   }
 
   try {
-    // 2. Execute the prompt
     const { output } = await diagnoseMushroomPrompt(input);
     
     if (!output) {
@@ -104,28 +92,20 @@ export async function diagnoseMushroom(input: z.infer<typeof DiagnoseMushroomInp
   } catch (error: any) {
     console.error("MushroomSense AI Doctor Error:", error);
 
-    // 3. Handle specific 503 (High Demand) error
     if (error.message?.includes('503') || error.message?.includes('high demand') || error.message?.includes('Service Unavailable')) {
       throw new Error(
         'The AI service is currently experiencing high demand. Please wait a few seconds and try again.'
       );
     }
 
-    // Handle specific 404/Authentication errors
     if (error.message?.includes('404') || error.message?.includes('not found')) {
       throw new Error(
-        'The Gemini model is not available for your API key or region. ' +
-        'Please ensure your API key from Google AI Studio has the "Generative Language API" enabled.'
+        'The Gemini model is not available for your API key or region. Please ensure your API key from Google AI Studio has the "Generative Language API" enabled.'
       );
     }
 
-    if (error.message?.includes('429') || error.message?.includes('quota')) {
-      throw new Error('AI analysis quota exceeded. Please wait a minute before trying again.');
-    }
-
-    // 4. Fallback for generic errors
     throw new Error(
-      error.message || 'An unexpected error occurred during AI analysis. Please check your connection and try again.'
+      error.message || 'An unexpected error occurred during AI analysis.'
     );
   }
 }

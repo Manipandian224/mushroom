@@ -20,7 +20,8 @@ import {
   AlertCircle,
   Stethoscope,
   Info,
-  Settings
+  Settings,
+  Languages
 } from 'lucide-react';
 import { LanguageSelector } from '@/components/language-selector';
 import Image from 'next/image';
@@ -34,7 +35,6 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Hardcoded English for general dashboard UI to keep translation "only for AI"
   const sensorStats = [
     { label: 'Temperature', value: '--', unit: '°C', icon: <Thermometer className="w-5 h-5" />, color: 'text-orange-500' },
     { label: 'Humidity', value: '--', unit: '%', icon: <Droplets className="w-5 h-5" />, color: 'text-blue-500' },
@@ -150,10 +150,6 @@ export default function Dashboard() {
                   <Camera className="w-5 h-5 text-blue-600" />
                   {t.aiDoctor}
                 </CardTitle>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider hidden sm:inline-block">Output Language</span>
-                  <LanguageSelector />
-                </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div 
@@ -189,9 +185,17 @@ export default function Dashboard() {
                         </Button>
                       </div>
                       
-                      <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
+                      <div className="flex flex-col gap-4 w-full max-w-sm">
+                        <div className="flex items-center justify-between p-2 bg-slate-50 rounded-lg border border-slate-100">
+                           <div className="flex items-center gap-2">
+                              <Languages className="w-4 h-4 text-muted-foreground" />
+                              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Analysis Language</span>
+                           </div>
+                           <LanguageSelector />
+                        </div>
+
                         <Button 
-                          className="flex-1 rounded-full shadow-lg gap-2 h-12 text-base"
+                          className="rounded-full shadow-lg gap-2 h-12 text-base w-full"
                           onClick={handleAnalyze}
                           disabled={isAnalyzing}
                         >
