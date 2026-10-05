@@ -75,19 +75,29 @@ export default function Dashboard() {
       if (snapshot.exists()) {
         const data = snapshot.val();
         
-        // Inspect root or nested nodes (e.g. sensors, sensorData, readings)
-        const rootData = data.sensors || data.sensorData || data.readings || data.data || data;
+        // Inspect root or nested nodes (e.g. mushroom, sensors, sensorData, readings)
+        const rootData = data.mushroom || data.sensors || data.sensorData || data.readings || data.data || data;
         
         const temp = rootData.temperature ?? rootData.temp ?? rootData.Temp ?? rootData.Temperature;
         const hum = rootData.humidity ?? rootData.hum ?? rootData.Hum ?? rootData.Humidity;
-        const co2 = rootData.co2 ?? rootData.CO2 ?? rootData.Co2;
-        const moisture = rootData.substrate_moisture ?? rootData.moisture ?? rootData.SubstrateMoisture ?? rootData.soil_moisture ?? rootData.Substrate;
+        
+        // Handle CO2 or Gas Detection status
+        let co2Val = rootData.co2 ?? rootData.CO2 ?? rootData.Co2;
+        if (co2Val === undefined && rootData.gasDetected !== undefined) {
+          co2Val = rootData.gasDetected ? 'Detected' : 'Clear';
+        }
+
+        // Handle Moisture or Soil Wet status
+        let moistureVal = rootData.substrate_moisture ?? rootData.moisture ?? rootData.SubstrateMoisture ?? rootData.soil_moisture ?? rootData.Substrate;
+        if (moistureVal === undefined && rootData.soilWet !== undefined) {
+          moistureVal = rootData.soilWet ? 'Wet' : 'Normal';
+        }
 
         setSensorData({
           temperature: temp !== undefined && temp !== null ? String(temp) : '--',
           humidity: hum !== undefined && hum !== null ? String(hum) : '--',
-          co2: co2 !== undefined && co2 !== null ? String(co2) : '--',
-          moisture: moisture !== undefined && moisture !== null ? String(moisture) : '--',
+          co2: co2Val !== undefined && co2Val !== null ? String(co2Val) : '--',
+          moisture: moistureVal !== undefined && moistureVal !== null ? String(moistureVal) : '--',
           isConnected: true,
           lastUpdated: new Date().toLocaleTimeString(),
         });
@@ -100,10 +110,10 @@ export default function Dashboard() {
   }, []);
 
   const sensorStats = [
-    { label: 'Temperature', value: sensorData.temperature, unit: '°C', icon: <Thermometer className="w-5 h-5" />, color: 'text-orange-500' },
-    { label: 'Humidity', value: sensorData.humidity, unit: '%', icon: <Droplets className="w-5 h-5" />, color: 'text-blue-500' },
-    { label: 'CO2', value: sensorData.co2, unit: 'ppm', icon: <Wind className="w-5 h-5" />, color: 'text-green-500' },
-    { label: 'Substrate Moisture', value: sensorData.moisture, unit: '%', icon: <Sprout className="w-5 h-5" />, color: 'text-amber-600' },
+    { label: 'Temperature', value: sensorData.temperature, unit: sensorData.temperature !== '--' ? '°C' : '', icon: <Thermometer className="w-5 h-5" />, color: 'text-orange-500' },
+    { label: 'Humidity', value: sensorData.humidity, unit: sensorData.humidity !== '--' ? '%' : '', icon: <Droplets className="w-5 h-5" />, color: 'text-blue-500' },
+    { label: 'Gas / CO2 Status', value: sensorData.co2, unit: (sensorData.co2 !== '--' && sensorData.co2 !== 'Clear' && sensorData.co2 !== 'Detected') ? 'ppm' : '', icon: <Wind className="w-5 h-5" />, color: 'text-green-500' },
+    { label: 'Substrate Moisture', value: sensorData.moisture, unit: (sensorData.moisture !== '--' && sensorData.moisture !== 'Normal' && sensorData.moisture !== 'Wet') ? '%' : '', icon: <Sprout className="w-5 h-5" />, color: 'text-amber-600' },
   ];
 
   const stopCamera = () => {
@@ -258,7 +268,7 @@ export default function Dashboard() {
             <Sprout className="w-6 h-6" />
           </div>
           <div className="text-center">
-            <h1 className="font-bold text-xl leading-none tracking-tight text-slate-900">Mushroom AI</h1>
+            <h1 className="font-bold text-xl leading-none tracking-tight text-slate-900">MushroomSense AI</h1>
             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mt-1">Smart Mushroom Cultivation Monitoring</p>
           </div>
         </div>
@@ -267,7 +277,7 @@ export default function Dashboard() {
       <div className="flex flex-1">
         <main className="flex-1 p-6 lg:p-10 space-y-8 max-w-5xl mx-auto w-full">
           <header className="text-center space-y-1">
-            <h2 className="text-3xl font-bold text-slate-900">Mushroom AI</h2>
+            <h2 className="text-3xl font-bold text-slate-900">Mushroom AI Doctor</h2>
             <p className="text-muted-foreground">Take a live photo or upload an image to diagnose mushroom health</p>
           </header>
 
