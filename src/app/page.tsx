@@ -258,7 +258,7 @@ export default function Dashboard() {
             <Sprout className="w-6 h-6" />
           </div>
           <div className="text-center">
-            <h1 className="font-bold text-xl leading-none tracking-tight text-slate-900">MushroomSense AI</h1>
+            <h1 className="font-bold text-xl leading-none tracking-tight text-slate-900">Mushroom AI</h1>
             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mt-1">Smart Mushroom Cultivation Monitoring</p>
           </div>
         </div>
@@ -267,7 +267,7 @@ export default function Dashboard() {
       <div className="flex flex-1">
         <main className="flex-1 p-6 lg:p-10 space-y-8 max-w-5xl mx-auto w-full">
           <header className="text-center space-y-1">
-            <h2 className="text-3xl font-bold text-slate-900">Mushroom AI Doctor</h2>
+            <h2 className="text-3xl font-bold text-slate-900">Mushroom AI</h2>
             <p className="text-muted-foreground">Take a live photo or upload an image to diagnose mushroom health</p>
           </header>
 
@@ -574,3 +574,4 @@ export default function Dashboard() {
     </div>
   );
 }
+
