@@ -3,7 +3,7 @@ export type Language = 'en' | 'ta';
 
 export const translations = {
   en: {
-    appName: 'MushroomSense AI',
+    appName: 'Mushroom AI',
     tagline: 'Smart Mushroom Cultivation Monitoring',
     dashboard: 'Dashboard',
     liveMonitoring: 'Live Monitoring',
@@ -18,7 +18,7 @@ export const translations = {
     temperature: 'Temperature',
     humidity: 'Humidity',
     co2: 'Carbon Dioxide',
-    moisture: 'Substrate Moisture',
+    moisture: 'Water Level',
     lastUpdated: 'Last Updated',
     loading: 'Analyzing...',
     waitingForData: 'Waiting for sensor data...',
@@ -36,7 +36,7 @@ export const translations = {
     disclaimer: 'This AI analysis is an advisory assessment based on the uploaded photograph and available cultivation data. It cannot guarantee a disease diagnosis or treatment outcome. Confirm uncertain or serious problems with a qualified mushroom cultivation expert. Do not rely on this result alone to determine whether a mushroom is safe to eat.',
   },
   ta: {
-    appName: 'MushroomSense AI',
+    appName: 'Mushroom AI',
     tagline: 'ஸ்மார்ட் காளான் வளர்ப்பு கண்காணிப்பு',
     dashboard: 'முகப்புப் பலகை',
     liveMonitoring: 'நேரடி கண்காணிப்பு',
@@ -51,7 +51,7 @@ export const translations = {
     temperature: 'வெப்பநிலை',
     humidity: 'ஈரப்பதம்',
     co2: 'கார்பன் டைஆக்சைடு',
-    moisture: 'வளர்ப்பு ஊடக ஈரப்பதம்',
+    moisture: 'நீர் மட்டம்',
     lastUpdated: 'கடைசியாகப் புதுப்பிக்கப்பட்டது',
     loading: 'பகுப்பாய்வு செய்கிறது...',
     waitingForData: 'சென்சார் தரவுகளுக்காக காத்திருக்கிறது...',

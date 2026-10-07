@@ -68,10 +68,37 @@ export default function Dashboard() {
     lastUpdated: null,
   });
 
+  // Load last history record from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedHistory = localStorage.getItem('mushroom_last_sensor_data');
+      if (savedHistory) {
+        const parsed = JSON.parse(savedHistory);
+        setSensorData((prev) => ({
+          ...prev,
+          temperature: parsed.temperature ?? prev.temperature,
+          humidity: parsed.humidity ?? prev.humidity,
+          co2: parsed.co2 ?? prev.co2,
+          moisture: parsed.moisture ?? prev.moisture,
+          lastUpdated: parsed.lastUpdated ?? prev.lastUpdated,
+          isConnected: false,
+        }));
+      }
+    } catch {
+      // ignore storage error
+    }
+  }, []);
+
   useEffect(() => {
     const sensorRef = ref(realtimeDb, '/');
+    const connectedRef = ref(realtimeDb, '.info/connected');
+
+    const unsubscribeConnected = onValue(connectedRef, (snap) => {
+      const isOnline = snap.val() === true;
+      setSensorData((prev) => ({ ...prev, isConnected: isOnline }));
+    });
     
-    const unsubscribe = onValue(sensorRef, (snapshot) => {
+    const unsubscribeSensor = onValue(sensorRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
         
@@ -87,33 +114,61 @@ export default function Dashboard() {
           co2Val = rootData.gasDetected ? 'Detected' : 'Clear';
         }
 
-        // Handle Moisture or Soil Wet status
-        let moistureVal = rootData.substrate_moisture ?? rootData.moisture ?? rootData.SubstrateMoisture ?? rootData.soil_moisture ?? rootData.Substrate;
-        if (moistureVal === undefined && rootData.soilWet !== undefined) {
-          moistureVal = rootData.soilWet ? 'Wet' : 'Normal';
+        // Handle Water Level (Wet vs Dry) from soilWet, waterLevel, moisture, etc.
+        let waterLevelRaw = rootData.soilWet ?? rootData.waterLevel ?? rootData.water_level ?? rootData.substrate_moisture ?? rootData.moisture ?? rootData.SubstrateMoisture ?? rootData.soil_moisture ?? rootData.Substrate;
+
+        let formattedWaterLevel = '--';
+        if (typeof waterLevelRaw === 'boolean') {
+          formattedWaterLevel = waterLevelRaw ? 'Wet' : 'Dry';
+        } else if (typeof waterLevelRaw === 'string') {
+          const lower = waterLevelRaw.toLowerCase().trim();
+          if (lower === 'wet' || lower === 'true' || lower === 'high') {
+            formattedWaterLevel = 'Wet';
+          } else if (lower === 'dry' || lower === 'false' || lower === 'low') {
+            formattedWaterLevel = 'Dry';
+          } else {
+            formattedWaterLevel = waterLevelRaw;
+          }
+        } else if (typeof waterLevelRaw === 'number') {
+          formattedWaterLevel = waterLevelRaw > 0 ? 'Wet' : 'Dry';
         }
 
-        setSensorData({
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        const updatedData = {
           temperature: temp !== undefined && temp !== null ? String(temp) : '--',
           humidity: hum !== undefined && hum !== null ? String(hum) : '--',
           co2: co2Val !== undefined && co2Val !== null ? String(co2Val) : '--',
-          moisture: moistureVal !== undefined && moistureVal !== null ? String(moistureVal) : '--',
+          moisture: formattedWaterLevel,
           isConnected: true,
-          lastUpdated: new Date().toLocaleTimeString(),
-        });
+          lastUpdated: timeStr,
+        };
+
+        setSensorData(updatedData);
+
+        // Persist to localStorage for offline history retention
+        try {
+          localStorage.setItem('mushroom_last_sensor_data', JSON.stringify(updatedData));
+        } catch {
+          // ignore storage error
+        }
       }
     }, (err) => {
       console.warn("Firebase Realtime DB connection info:", err);
+      setSensorData((prev) => ({ ...prev, isConnected: false }));
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeConnected();
+      unsubscribeSensor();
+    };
   }, []);
 
   const sensorStats = [
     { label: 'Temperature', value: sensorData.temperature, unit: sensorData.temperature !== '--' ? '°C' : '', icon: <Thermometer className="w-5 h-5" />, color: 'text-orange-500' },
     { label: 'Humidity', value: sensorData.humidity, unit: sensorData.humidity !== '--' ? '%' : '', icon: <Droplets className="w-5 h-5" />, color: 'text-blue-500' },
     { label: 'Gas / CO2 Status', value: sensorData.co2, unit: (sensorData.co2 !== '--' && sensorData.co2 !== 'Clear' && sensorData.co2 !== 'Detected') ? 'ppm' : '', icon: <Wind className="w-5 h-5" />, color: 'text-green-500' },
-    { label: 'Substrate Moisture', value: sensorData.moisture, unit: (sensorData.moisture !== '--' && sensorData.moisture !== 'Normal' && sensorData.moisture !== 'Wet') ? '%' : '', icon: <Sprout className="w-5 h-5" />, color: 'text-amber-600' },
+    { label: 'Water Level', value: sensorData.moisture, unit: (sensorData.moisture !== '--' && sensorData.moisture !== 'Wet' && sensorData.moisture !== 'Dry') ? '%' : '', icon: <Sprout className="w-5 h-5" />, color: 'text-amber-600' },
   ];
 
   const stopCamera = () => {
@@ -302,7 +357,10 @@ export default function Dashboard() {
                         Firebase Live
                       </span>
                     ) : (
-                      "Connecting..."
+                      <span className="text-amber-600 font-medium inline-flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                        {sensorData.lastUpdated ? `Offline (Last: ${sensorData.lastUpdated})` : "Connecting..."}
+                      </span>
                     )}
                   </p>
                 </CardContent>

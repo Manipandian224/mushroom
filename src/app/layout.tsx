@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Mushroom AI",
-  description: "Smart Mushroom Cultivation Monitoring & AI Analysis",
+  title: "New Project",
+  description: "A fresh start with Next.js",
 };
 
 export default function RootLayout({
