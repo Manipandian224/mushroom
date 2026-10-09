@@ -120,8 +120,20 @@ export default function Dashboard() {
           co2Val = rootData.gasDetected ? 'Detected' : 'Clear';
         }
 
-        // Handle Water Level as numeric value
-        let waterLevelRaw = rootData.waterLevel ?? rootData.water_level ?? rootData.water ?? rootData.waterPercentage ?? rootData.substrate_moisture ?? rootData.moisture ?? rootData.SubstrateMoisture ?? rootData.soil_moisture ?? rootData.Substrate ?? rootData.soilWet;
+        // Handle Water Level as numeric value (extracting soilMoisture from ESP32 payload)
+        let waterLevelRaw = 
+          rootData.soilMoisture ?? 
+          rootData.soil_moisture ?? 
+          rootData.soilMoistureValue ?? 
+          rootData.waterLevel ?? 
+          rootData.water_level ?? 
+          rootData.water ?? 
+          rootData.waterPercentage ?? 
+          rootData.substrate_moisture ?? 
+          rootData.moisture ?? 
+          rootData.SubstrateMoisture ?? 
+          rootData.Substrate ?? 
+          rootData.soilWet;
 
         let formattedWaterLevel = '--';
         if (typeof waterLevelRaw === 'number') {
@@ -143,7 +155,7 @@ export default function Dashboard() {
         }
 
         // Handle Fan Status (ON / OFF)
-        let fanRaw = rootData.fan ?? rootData.fanStatus ?? rootData.Fan ?? rootData.fan_status;
+        let fanRaw = rootData.fan ?? rootData.fanState ?? rootData.fanStatus ?? rootData.Fan ?? rootData.fan_status;
         let fanParsed: 'ON' | 'OFF' | '--' = '--';
         if (typeof fanRaw === 'boolean') {
           fanParsed = fanRaw ? 'ON' : 'OFF';
@@ -155,7 +167,7 @@ export default function Dashboard() {
         }
 
         // Handle Pump Status (ON / OFF)
-        let pumpRaw = rootData.pump ?? rootData.waterPump ?? rootData.pumpStatus ?? rootData.pump_status ?? rootData.soilWet;
+        let pumpRaw = rootData.pump ?? rootData.pumpState ?? rootData.waterPump ?? rootData.pumpStatus ?? rootData.pump_status;
         let pumpParsed: 'ON' | 'OFF' | '--' = '--';
         if (typeof pumpRaw === 'boolean') {
           pumpParsed = pumpRaw ? 'ON' : 'OFF';
