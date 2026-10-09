@@ -57,6 +57,8 @@ export default function Dashboard() {
     humidity: string;
     co2: string;
     moisture: string;
+    fanStatus: 'ON' | 'OFF' | '--';
+    pumpStatus: 'ON' | 'OFF' | '--';
     isConnected: boolean;
     lastUpdated: string | null;
   }>({
@@ -64,6 +66,8 @@ export default function Dashboard() {
     humidity: '--',
     co2: '--',
     moisture: '--',
+    fanStatus: '--',
+    pumpStatus: '--',
     isConnected: false,
     lastUpdated: null,
   });
@@ -80,6 +84,8 @@ export default function Dashboard() {
           humidity: parsed.humidity ?? prev.humidity,
           co2: parsed.co2 ?? prev.co2,
           moisture: parsed.moisture ?? prev.moisture,
+          fanStatus: parsed.fanStatus ?? prev.fanStatus,
+          pumpStatus: parsed.pumpStatus ?? prev.pumpStatus,
           lastUpdated: parsed.lastUpdated ?? prev.lastUpdated,
           isConnected: false,
         }));
@@ -114,23 +120,50 @@ export default function Dashboard() {
           co2Val = rootData.gasDetected ? 'Detected' : 'Clear';
         }
 
-        // Handle Water Level (Wet vs Dry) from soilWet, waterLevel, moisture, etc.
-        let waterLevelRaw = rootData.soilWet ?? rootData.waterLevel ?? rootData.water_level ?? rootData.substrate_moisture ?? rootData.moisture ?? rootData.SubstrateMoisture ?? rootData.soil_moisture ?? rootData.Substrate;
+        // Handle Water Level as numeric value
+        let waterLevelRaw = rootData.waterLevel ?? rootData.water_level ?? rootData.water ?? rootData.waterPercentage ?? rootData.substrate_moisture ?? rootData.moisture ?? rootData.SubstrateMoisture ?? rootData.soil_moisture ?? rootData.Substrate ?? rootData.soilWet;
 
         let formattedWaterLevel = '--';
-        if (typeof waterLevelRaw === 'boolean') {
-          formattedWaterLevel = waterLevelRaw ? 'Wet' : 'Dry';
+        if (typeof waterLevelRaw === 'number') {
+          formattedWaterLevel = String(waterLevelRaw);
         } else if (typeof waterLevelRaw === 'string') {
-          const lower = waterLevelRaw.toLowerCase().trim();
-          if (lower === 'wet' || lower === 'true' || lower === 'high') {
-            formattedWaterLevel = 'Wet';
-          } else if (lower === 'dry' || lower === 'false' || lower === 'low') {
-            formattedWaterLevel = 'Dry';
+          const numParsed = parseFloat(waterLevelRaw);
+          if (!isNaN(numParsed)) {
+            formattedWaterLevel = String(numParsed);
           } else {
-            formattedWaterLevel = waterLevelRaw;
+            const lower = waterLevelRaw.toLowerCase().trim();
+            if (lower === 'wet' || lower === 'true' || lower === 'high') {
+              formattedWaterLevel = '100';
+            } else if (lower === 'dry' || lower === 'false' || lower === 'low') {
+              formattedWaterLevel = '0';
+            }
           }
-        } else if (typeof waterLevelRaw === 'number') {
-          formattedWaterLevel = waterLevelRaw > 0 ? 'Wet' : 'Dry';
+        } else if (typeof waterLevelRaw === 'boolean') {
+          formattedWaterLevel = waterLevelRaw ? '100' : '0';
+        }
+
+        // Handle Fan Status (ON / OFF)
+        let fanRaw = rootData.fan ?? rootData.fanStatus ?? rootData.Fan ?? rootData.fan_status;
+        let fanParsed: 'ON' | 'OFF' | '--' = '--';
+        if (typeof fanRaw === 'boolean') {
+          fanParsed = fanRaw ? 'ON' : 'OFF';
+        } else if (typeof fanRaw === 'string') {
+          const fLower = fanRaw.toLowerCase().trim();
+          fanParsed = (fLower === 'on' || fLower === 'true' || fLower === '1') ? 'ON' : 'OFF';
+        } else if (typeof fanRaw === 'number') {
+          fanParsed = fanRaw > 0 ? 'ON' : 'OFF';
+        }
+
+        // Handle Pump Status (ON / OFF)
+        let pumpRaw = rootData.pump ?? rootData.waterPump ?? rootData.pumpStatus ?? rootData.pump_status ?? rootData.soilWet;
+        let pumpParsed: 'ON' | 'OFF' | '--' = '--';
+        if (typeof pumpRaw === 'boolean') {
+          pumpParsed = pumpRaw ? 'ON' : 'OFF';
+        } else if (typeof pumpRaw === 'string') {
+          const pLower = pumpRaw.toLowerCase().trim();
+          pumpParsed = (pLower === 'on' || pLower === 'true' || pLower === '1') ? 'ON' : 'OFF';
+        } else if (typeof pumpRaw === 'number') {
+          pumpParsed = pumpRaw > 0 ? 'ON' : 'OFF';
         }
 
         const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -140,6 +173,8 @@ export default function Dashboard() {
           humidity: hum !== undefined && hum !== null ? String(hum) : '--',
           co2: co2Val !== undefined && co2Val !== null ? String(co2Val) : '--',
           moisture: formattedWaterLevel,
+          fanStatus: fanParsed,
+          pumpStatus: pumpParsed,
           isConnected: true,
           lastUpdated: timeStr,
         };
@@ -165,10 +200,44 @@ export default function Dashboard() {
   }, []);
 
   const sensorStats = [
-    { label: 'Temperature', value: sensorData.temperature, unit: sensorData.temperature !== '--' ? '°C' : '', icon: <Thermometer className="w-5 h-5" />, color: 'text-orange-500' },
-    { label: 'Humidity', value: sensorData.humidity, unit: sensorData.humidity !== '--' ? '%' : '', icon: <Droplets className="w-5 h-5" />, color: 'text-blue-500' },
-    { label: 'Gas / CO2 Status', value: sensorData.co2, unit: (sensorData.co2 !== '--' && sensorData.co2 !== 'Clear' && sensorData.co2 !== 'Detected') ? 'ppm' : '', icon: <Wind className="w-5 h-5" />, color: 'text-green-500' },
-    { label: 'Water Level', value: sensorData.moisture, unit: (sensorData.moisture !== '--' && sensorData.moisture !== 'Wet' && sensorData.moisture !== 'Dry') ? '%' : '', icon: <Sprout className="w-5 h-5" />, color: 'text-amber-600' },
+    { 
+      label: 'Temperature', 
+      value: sensorData.temperature, 
+      unit: sensorData.temperature !== '--' ? '°C' : '', 
+      icon: <Thermometer className="w-5 h-5" />, 
+      color: 'text-orange-500',
+      badge: sensorData.fanStatus !== '--' ? {
+        text: `Fan: ${sensorData.fanStatus}`,
+        active: sensorData.fanStatus === 'ON',
+      } : null,
+    },
+    { 
+      label: 'Humidity', 
+      value: sensorData.humidity, 
+      unit: sensorData.humidity !== '--' ? '%' : '', 
+      icon: <Droplets className="w-5 h-5" />, 
+      color: 'text-blue-500',
+      badge: null,
+    },
+    { 
+      label: 'Gas / CO2 Status', 
+      value: sensorData.co2, 
+      unit: (sensorData.co2 !== '--' && sensorData.co2 !== 'Clear' && sensorData.co2 !== 'Detected') ? 'ppm' : '', 
+      icon: <Wind className="w-5 h-5" />, 
+      color: 'text-green-500',
+      badge: null,
+    },
+    { 
+      label: 'Water Level', 
+      value: sensorData.moisture, 
+      unit: sensorData.moisture !== '--' ? '%' : '', 
+      icon: <Sprout className="w-5 h-5" />, 
+      color: 'text-amber-600',
+      badge: sensorData.pumpStatus !== '--' ? {
+        text: `Pump: ${sensorData.pumpStatus}`,
+        active: sensorData.pumpStatus === 'ON',
+      } : null,
+    },
   ];
 
   const stopCamera = () => {
@@ -323,7 +392,7 @@ export default function Dashboard() {
             <Sprout className="w-6 h-6" />
           </div>
           <div className="text-center">
-            <h1 className="font-bold text-xl leading-none tracking-tight text-slate-900">MushroomSense AI</h1>
+            <h1 className="font-bold text-xl leading-none tracking-tight text-slate-900">Mushroom AI</h1>
             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mt-1">Smart Mushroom Cultivation Monitoring</p>
           </div>
         </div>
@@ -332,7 +401,7 @@ export default function Dashboard() {
       <div className="flex flex-1">
         <main className="flex-1 p-6 lg:p-10 space-y-8 max-w-5xl mx-auto w-full">
           <header className="text-center space-y-1">
-            <h2 className="text-3xl font-bold text-slate-900">Mushroom AI Doctor</h2>
+            <h2 className="text-3xl font-bold text-slate-900">Mushroom AI</h2>
             <p className="text-muted-foreground">Take a live photo or upload an image to diagnose mushroom health</p>
           </header>
 
@@ -345,12 +414,27 @@ export default function Dashboard() {
                     {stat.icon}
                   </div>
                 </CardHeader>
-                <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
-                  <div className="text-xl sm:text-2xl font-bold">
-                    {stat.value}
-                    <span className="text-xs sm:text-sm font-normal text-muted-foreground ml-0.5 sm:ml-1">{stat.unit}</span>
+                <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 space-y-1.5">
+                  <div className="flex items-baseline justify-between gap-1 flex-wrap">
+                    <div className="text-xl sm:text-2xl font-bold">
+                      {stat.value}
+                      <span className="text-xs sm:text-sm font-normal text-muted-foreground ml-0.5 sm:ml-1">{stat.unit}</span>
+                    </div>
+
+                    {stat.badge && (
+                      <span 
+                        className={`text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full border ${
+                          stat.badge.active 
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 animate-pulse' 
+                            : 'bg-slate-100 text-slate-600 border-slate-200'
+                        }`}
+                      >
+                        {stat.badge.text}
+                      </span>
+                    )}
                   </div>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 italic truncate">
+
+                  <p className="text-[10px] sm:text-xs text-muted-foreground italic truncate">
                     {sensorData.isConnected ? (
                       <span className="text-emerald-600 font-medium inline-flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
